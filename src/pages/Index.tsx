@@ -1,12 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, GraduationCap, FileText, Users } from "lucide-react";
-import { useState } from "react";
+import { BookOpen, GraduationCap, FileText, Users, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const [selectedSector, setSelectedSector] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
 
   const educationSectors = {
     "+2": ["Grade 11", "Grade 12"],
@@ -15,8 +19,47 @@ const Index = () => {
     "Loksewa": ["PSC", "Banking", "Administrative", "Technical"]
   };
 
+  const handleAuthAction = () => {
+    if (user) {
+      navigate("/notes");
+    } else {
+      navigate("/auth");
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 flex items-center justify-center">
+        <div className="text-center">
+          <BookOpen className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
+      {/* Navigation Bar */}
+      {user && (
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-primary" />
+              <span className="font-semibold">Welcome, {user.email}</span>
+            </div>
+            <Button variant="outline" onClick={handleSignOut} className="flex items-center gap-2">
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      )}
+      
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[var(--hero-gradient)] opacity-10"></div>
@@ -69,8 +112,12 @@ const Index = () => {
               </div>
             </div>
             
-            <Button size="lg" className="h-12 px-8 text-lg font-semibold">
-              Login to Access Notes
+            <Button 
+              size="lg" 
+              className="h-12 px-8 text-lg font-semibold"
+              onClick={handleAuthAction}
+            >
+              {user ? "Access Your Notes" : "Login to Access Notes"}
             </Button>
           </div>
         </div>
